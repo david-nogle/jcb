@@ -11,6 +11,9 @@ target/
 *.jar
 *.war
 
+# Other Files #
+jcb.txt
+
 ######################
 # Windows
 ######################
@@ -39,4 +42,3 @@ bin/**
 .idea/*
 out
 *.emptyDir
-/StyleMe/src/main/webapp/assets
