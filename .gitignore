@@ -1,0 +1,42 @@
+# Directories #
+target/
+/build/
+/bin/
+.gradle/
+.mvn/
+
+# Package Files #
+**/target/*
+*.class
+*.jar
+*.war
+
+######################
+# Windows
+######################
+Thumbs.db
+Desktop.ini
+
+######################
+# OSX
+######################
+.DS_Store
+*.DS_Store
+
+######################
+# Eclipse
+######################
+.project
+.metadata
+.classpath
+bin/**
+.settings/
+
+######################
+# IDEA
+######################
+*.iml
+.idea/*
+out
+*.emptyDir
+/StyleMe/src/main/webapp/assets
