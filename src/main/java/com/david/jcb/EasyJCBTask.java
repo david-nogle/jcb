@@ -19,9 +19,15 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.jsoup.Jsoup;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -83,6 +89,34 @@ public class EasyJCBTask {
 		CARDS = Collections.unmodifiableSet(tmp);
 	}
 
+	private final static PoolingHttpClientConnectionManager CONNMGR;
+
+	static {
+		LayeredConnectionSocketFactory ssl = null;
+		try {
+			ssl = new SSLConnectionSocketFactory(//
+					SSLContexts.custom()//
+							.loadTrustMaterial(new TrustSelfSignedStrategy() {
+								@Override
+								public boolean isTrusted(final X509Certificate[] chain, final String authType)
+										throws CertificateException {
+									return true;
+								}
+							}).build());
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			LOG.error(e.getMessage(), e);
+		}
+
+		CONNMGR = new PoolingHttpClientConnectionManager(//
+				RegistryBuilder.<ConnectionSocketFactory> create()
+						.register("http", PlainConnectionSocketFactory.getSocketFactory())//
+						.register("https", ssl)//
+						.build());
+		CONNMGR.setDefaultMaxPerRoute(100);
+		CONNMGR.setMaxTotal(1000);
+		CONNMGR.setValidateAfterInactivity(1000);
+	}
+
 	private final AtomicInteger counter = new AtomicInteger(0);
 
 	private Async async;
@@ -90,27 +124,16 @@ public class EasyJCBTask {
 	@PostConstruct
 	void init() {
 		this.async = Async.newInstance();
-		try {
-			this.async.use(Executor.newInstance(//
-					HttpClients.custom()//
-							.setSSLContext(SSLContexts.custom().loadTrustMaterial(new TrustSelfSignedStrategy() {
-								@Override
-								public boolean isTrusted(final X509Certificate[] chain, final String authType)
-										throws CertificateException {
-									return true;
-								}
-							}).build())//
-							.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)//
-							.build()));
-		} catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-			LOG.error(e.getMessage(), e);
-		}
-
+		this.async.use(Executor.newInstance(//
+				HttpClients.custom()//
+						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)//
+						.setConnectionManager(CONNMGR)//
+						.build()));
 		LOG.info("====================Ready====================");
 	}
 
 	@Scheduled(cron = "*/1 0-6 9 1 * ?")
-	// @Scheduled(fixedRate = 1000) // XXX For local test
+	// @Scheduled(fixedRate = 500) // XXX For local test
 	public void run() {
 		CARDS.forEach(this::goal);
 	}
