@@ -36,45 +36,45 @@ public class EasyJCBTask {
 		final Set<Form> tmp = new HashSet<>();
 		// XXX input card info here
 		tmp.add(Form.form()//
-				.add("txtCreditCard1", "")//
-				.add("txtCreditCard2", "")//
+				.add("txtCreditCard1", "1234")//
+				.add("txtCreditCard2", "1234")//
 				.add("txtCreditCard3", "")// XXX Optional
-				.add("txtCreditCard4", "")//
+				.add("txtCreditCard4", "1234")//
 				//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
 				//
 				.add("captcha", "")//
 				.add("method", "loginAccept")//
 				.add("hidCaptcha", "")//
 		);
 		tmp.add(Form.form()//
-				.add("txtCreditCard1", "")//
-				.add("txtCreditCard2", "")//
+				.add("txtCreditCard1", "1234")//
+				.add("txtCreditCard2", "1234")//
 				.add("txtCreditCard3", "")// XXX Optional
-				.add("txtCreditCard4", "")//
+				.add("txtCreditCard4", "1234")//
 				//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
 				//
 				.add("captcha", "")//
 				.add("method", "loginAccept")//
 				.add("hidCaptcha", "")//
 		);
 		tmp.add(Form.form()//
-				.add("txtCreditCard1", "")//
-				.add("txtCreditCard2", "")//
+				.add("txtCreditCard1", "1234")//
+				.add("txtCreditCard2", "1234")//
 				.add("txtCreditCard3", "")// XXX Optional
-				.add("txtCreditCard4", "")//
+				.add("txtCreditCard4", "1234")//
 				//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
-				.add("txtEasyCard1", "")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
+				.add("txtEasyCard1", "1234")//
 				//
 				.add("captcha", "")//
 				.add("method", "loginAccept")//
@@ -130,7 +130,7 @@ public class EasyJCBTask {
 						final String responseMessage = Jsoup.parse(result.asString()).select("#content").first().text();
 						if (StringUtils.contains(responseMessage, "登錄名額已滿")) {
 							LOG.info("====================GG====================");
-							done();
+							// done();
 						} else if (StringUtils.contains(responseMessage, "恭喜")) {
 							// TODO check is complete or not
 							LOG.info("====================WIN======================");
