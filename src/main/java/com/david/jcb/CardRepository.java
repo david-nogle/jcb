@@ -58,6 +58,21 @@ public class CardRepository {
 				.add("method", "loginAccept")//
 				.add("hidCaptcha", "")//
 		);
+		tmp.add(Form.form()//
+				.add("txtCreditCard1", "3567")//
+				.add("txtCreditCard2", "3000")//
+				.add("txtCreditCard3", "")// XXX Optional
+				.add("txtCreditCard4", "7107")//
+				//
+				.add("txtEasyCard1", "8300")//
+				.add("txtEasyCard1", "9620")//
+				.add("txtEasyCard1", "0079")//
+				.add("txtEasyCard1", "7390")//
+				//
+				.add("captcha", "")//
+				.add("method", "loginAccept")//
+				.add("hidCaptcha", "")//
+		);
 		CARDS = Collections.unmodifiableSet(tmp);
 	}
 

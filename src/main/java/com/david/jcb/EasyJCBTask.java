@@ -7,7 +7,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 
@@ -37,38 +36,8 @@ import org.springframework.stereotype.Component;
 public class EasyJCBTask {
 	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(EasyJCBTask.class);
 
-	private final static PoolingHttpClientConnectionManager CONNMGR;
-
-	static {
-		LayeredConnectionSocketFactory ssl = null;
-		try {
-			ssl = new SSLConnectionSocketFactory(//
-					SSLContexts.custom()//
-							.loadTrustMaterial(new TrustSelfSignedStrategy() {
-								@Override
-								public boolean isTrusted(final X509Certificate[] chain, final String authType)
-										throws CertificateException {
-									return true;
-								}
-							}).build());
-		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-			LOG.error(e.getMessage(), e);
-		}
-
-		CONNMGR = new PoolingHttpClientConnectionManager(//
-				RegistryBuilder.<ConnectionSocketFactory> create()
-						.register("http", PlainConnectionSocketFactory.getSocketFactory())//
-						.register("https", ssl)//
-						.build());
-		CONNMGR.setDefaultMaxPerRoute(100);
-		CONNMGR.setMaxTotal(1000);
-		CONNMGR.setValidateAfterInactivity(1000);
-	}
-
 	@Autowired
 	private CardRepository cardRepository;
-
-	private final AtomicInteger counter = new AtomicInteger(0);
 
 	private Set<Form> cards;
 
@@ -77,17 +46,43 @@ public class EasyJCBTask {
 	@PostConstruct
 	void init() {
 		this.async = Async.newInstance();
-		this.async.use(Executor.newInstance(//
-				HttpClients.custom()//
-						.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)//
-						.setConnectionManager(CONNMGR)//
-						.build()));
+		{
+			LayeredConnectionSocketFactory ssl = null;
+			try {
+				ssl = new SSLConnectionSocketFactory(//
+						SSLContexts.custom()//
+								.loadTrustMaterial(new TrustSelfSignedStrategy() {
+									@Override
+									public boolean isTrusted(final X509Certificate[] chain, final String authType)
+											throws CertificateException {
+										return true;
+									}
+								}).build());
+			} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+				LOG.error(e.getMessage(), e);
+			}
+
+			final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager(//
+					RegistryBuilder.<ConnectionSocketFactory> create()
+							.register("http", PlainConnectionSocketFactory.getSocketFactory())//
+							.register("https", ssl)//
+							.build());
+			connManager.setDefaultMaxPerRoute(100);
+			connManager.setMaxTotal(1000);
+			connManager.setValidateAfterInactivity(1000);
+
+			this.async.use(Executor.newInstance(//
+					HttpClients.custom()//
+							.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)//
+							.setConnectionManager(connManager)//
+							.build()));
+		}
+
 		this.cards = Collections.unmodifiableSet(this.cardRepository.findAll());
 		LOG.info("====================Ready====================");
 	}
 
 	@Scheduled(cron = "*/1 0-6 9 1 * ?")
-	// @Scheduled(fixedRate = 500) // XXX For local test
 	public void run() {
 		this.cards.forEach(this::goal);
 	}
@@ -108,16 +103,10 @@ public class EasyJCBTask {
 						if (StringUtils.contains(responseMessage, "登錄名額已滿")) {
 							// TODO check is full or not
 							LOG.info("====================GG====================");
-							// done();
-							LOG.info("full.done.");
+							LOG.info("full.");
 						} else if (StringUtils.contains(responseMessage, "恭喜")) {
-							// TODO check is complete or not
+							// TODO check which card is completed
 							LOG.info("====================WIN======================");
-							final int win = EasyJCBTask.this.counter.incrementAndGet();
-							if (win == EasyJCBTask.this.cards.size()) {
-								// done();
-								LOG.info("WIN {} .done.", win);
-							}
 						}
 						LOG.info("response : {}", responseMessage);
 					}
@@ -129,11 +118,5 @@ public class EasyJCBTask {
 				});
 
 		LOG.debug("Execute at %tc%n", new java.util.Date());
-	}
-
-	// XXX for future
-	@SuppressWarnings("unused")
-	private void done() {
-		System.exit(0);
 	}
 }
