@@ -1,0 +1,22 @@
+machine:
+  java:
+    version: oraclejdk8
+  timezone:
+    Asia/Taipei
+
+general:
+  branches:
+    only:
+      - master
+  artifacts:
+    - "build/reports/tests"
+    
+dependencies:
+  pre:
+    - chmod +x gradlew
+
+test:
+  override:
+    - ./gradlew test -is
+  post:
+    - cp -r build/reports/* $CIRCLE_TEST_REPORTS/
