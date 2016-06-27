@@ -10,7 +10,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @EnableScheduling
 public class JcbApplication {
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		SpringApplication.run(JcbApplication.class, args);
 	}
 
@@ -18,6 +18,10 @@ public class JcbApplication {
 	public ThreadPoolTaskScheduler taskScheduler() {
 		final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
 		taskScheduler.setPoolSize(1000);
+
+		taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
+		taskScheduler.initialize();
+
 		return taskScheduler;
 	}
 }

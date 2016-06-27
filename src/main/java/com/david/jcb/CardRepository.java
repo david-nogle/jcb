@@ -4,41 +4,38 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.http.client.fluent.Form;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class CardRepository {
-	private static final Set<Form> CARDS;
+	private static final Set<Card> CARDS;
 	static {
-		final Set<Form> tmp = new HashSet<>();
-		// XXX input card info here
-		tmp.add(buildCard("", "", "", "", "", "", ""));
-		tmp.add(buildCard("", "", "", "", "", "", ""));
-
+		final Set<Card> tmp = new HashSet<>();
+		tmp.add(new Card()//
+				.txtCreditCard1("").txtCreditCard2("").txtCreditCard4("")//
+				.txtEasyCard1("").txtEasyCard2("").txtEasyCard3("").txtEasyCard4("")//
+		);
+		tmp.add(new Card()//
+				.txtCreditCard1("").txtCreditCard2("").txtCreditCard4("")//
+				.txtEasyCard1("").txtEasyCard2("").txtEasyCard3("").txtEasyCard4("")//
+		);
 		CARDS = Collections.unmodifiableSet(tmp);
 	}
 
-	private static Form buildCard(final String txtCreditCard1, final String txtCreditCard2, final String txtCreditCard4//
-			, final String txtEasyCard1, final String txtEasyCard2, final String txtEasyCard3,
-			final String txtEasyCard4) {
-		return Form.form()//
-				.add("txtCreditCard1", txtCreditCard1)//
-				.add("txtCreditCard2", txtCreditCard2)//
-				.add("txtCreditCard3", "")// XXX Optional
-				.add("txtCreditCard4", txtCreditCard4)//
-				//
-				.add("txtEasyCard1", txtEasyCard1)//
-				.add("txtEasyCard2", txtEasyCard2)//
-				.add("txtEasyCard3", txtEasyCard3)//
-				.add("txtEasyCard4", txtEasyCard4)//
-				//
-				.add("captcha", "")//
-				.add("method", "loginAccept")//
-				.add("hidCaptcha", "");
-	}
+	// accept:
+	// txtCreditCard1:1234
+	// txtCreditCard2:1234
+	// txtCreditCard4:1234
+	// txtEasyCard1:1234
+	// txtEasyCard2:1234
+	// txtEasyCard3:1234
+	// txtEasyCard4:1234
+	// captcha:6768
+	// method:loginAccept
+	// hidCaptcha:2016-06-01 09:13:35.921
+	// CP:6768
 
-	public Set<Form> findAll() {
+	public Set<Card> findAll() {
 		return CARDS;
 	}
 }
