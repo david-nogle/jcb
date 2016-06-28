@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,7 +37,7 @@ public class SuperEasyJCBTask {
 	}
 
 	@Scheduled(cron = "*/1 0-6 9 1 * ?")
-	// @Scheduled(fixedRate = 5000) // XXX HFT
+	// @Scheduled(fixedRate = 5000) // XXX HF
 	public void run() {
 		// IntStream.range(0, this.cards.size()).forEach(this::goal);
 		IntStream.range(0, this.cards.size()).forEach(index -> this.executor.execute(() -> this.goal(index)));
@@ -44,11 +45,24 @@ public class SuperEasyJCBTask {
 
 	private final void goal(final int cardIndex) {
 		final Card card = this.cards.get(cardIndex);
-		final WebDriver driver = this.webDriverPool.getWebDriver(cardIndex);
+		final WebDriver driver = this.webDriverPool.get(cardIndex);
 		driver.get("https://ezweb.easycard.com.tw/Event01/JCBLoginServlet");
 		driver.switchTo().defaultContent();
-		driver.switchTo().frame(0);// XXX confirm
 
+		if (!this.isExist(driver, By.tagName("iframe"))) {
+			LOG.info("iframe is not exist");
+			return;
+		}
+		try {
+			driver.switchTo().frame(0);// XXX confirm
+		} catch (final NoSuchFrameException e) {
+			LOG.error(e.getMessage(), e);
+			return;
+		}
+		if (!this.isExist(driver, By.id("hidCaptcha"))) {
+			LOG.info("hidCaptcha is not exist");
+			return;
+		}
 		final String captcha = driver.findElement(By.id("hidCaptcha")).getAttribute("value");
 		// final String hidCaptcha =
 		// LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd
@@ -84,6 +98,10 @@ public class SuperEasyJCBTask {
 		driver.findElement(By.tagName("form")).submit();// XXX confirm
 
 		driver.quit();
+	}
+
+	private boolean isExist(final WebDriver driver, final By by) {
+		return !driver.findElements(by).isEmpty();
 	}
 
 	// Plan B

@@ -46,7 +46,7 @@ public class QueryMyCardTask {
 
 	private final void goal(final int cardIndex) {
 		final Card card = this.cards.get(cardIndex);
-		final WebDriver wd = this.webDriverPool.getWebDriver(cardIndex);
+		final WebDriver wd = this.webDriverPool.get(cardIndex);
 		wd.get("https://ezweb.easycard.com.tw/Event01/JCBLoginRecordServlet");
 		wd.switchTo().defaultContent();
 		wd.switchTo().frame(0);
