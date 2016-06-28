@@ -1,7 +1,9 @@
 package com.david.jcb;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Repository;
@@ -35,7 +37,7 @@ public class CardRepository {
 	// hidCaptcha:2016-06-01 09:13:35.921
 	// CP:6768
 
-	public Set<Card> findAll() {
-		return CARDS;
+	public List<Card> findAll() {
+		return new ArrayList<>(CARDS);
 	}
 }

@@ -18,10 +18,10 @@ public class WebDriverPool {
 	 * 
 	 * @return
 	 */
-	public WebDriver getWebDriver() {
+	public WebDriver getWebDriver(final int nodeIndex) {
 		final DesiredCapabilities phantomConfig = DesiredCapabilities.phantomjs();
 		phantomConfig.setCapability("phantomjs.binary.path",
-				"/Users/david/Downloads/phantomjs-2.1.1-macosx/bin/phantomjs");
+				"/Users/david/server/phantomjs-2.1.1-macosx_" + nodeIndex + "/bin/phantomjs");
 		return new PhantomJSDriver(phantomConfig);
 	}
 }

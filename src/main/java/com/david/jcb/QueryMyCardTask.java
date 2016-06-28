@@ -1,7 +1,8 @@
 package com.david.jcb;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import javax.annotation.PostConstruct;
 
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,35 +18,35 @@ public class QueryMyCardTask {
 	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(QueryMyCardTask.class);
 
 	@Autowired
-	private WebDriverPool webDriverPool;
-
-	@Autowired
 	private CardRepository cardRepository;
 
-	private Set<Card> cards;
+	@Autowired
+	private WebDriverPool webDriverPool;
 
 	// XXX PhantomJSDriver not support multiple thread
 	// IllegalStateException:
 	// The process has not exited yet therefore no result is available ...
-	// @Autowired
-	// private ThreadPoolTaskScheduler executor;
+	// Multiple node can reduce the Exception chance
+	@Autowired
+	private ThreadPoolTaskScheduler executor;
+
+	private List<Card> cards;
 
 	@PostConstruct
 	void init() {
-		this.cards = Collections.unmodifiableSet(this.cardRepository.findAll());
+		this.cards = Collections.unmodifiableList(this.cardRepository.findAll());
 	}
 
 	// For local verify
-	// @Scheduled(cron = "*/1 42-43 17 27 * ?")
+	// @Scheduled(cron = "*/1 27-28 11 28 * ?")
 	// @Scheduled(fixedRate = 5000)
 	public void run() {
-		// this.cards.stream().forEach(card -> this.executor.execute(() ->
-		// this.goal(card)));
-		this.cards.stream().forEach(this::goal);
+		IntStream.range(0, this.cards.size()).forEach(index -> this.executor.execute(() -> this.goal(index)));
 	}
 
-	private final void goal(final Card card) {
-		final WebDriver wd = this.webDriverPool.getWebDriver();
+	private final void goal(final int cardIndex) {
+		final Card card = this.cards.get(cardIndex);
+		final WebDriver wd = this.webDriverPool.getWebDriver(cardIndex);
 		wd.get("https://ezweb.easycard.com.tw/Event01/JCBLoginRecordServlet");
 		wd.switchTo().defaultContent();
 		wd.switchTo().frame(0);
@@ -61,7 +63,7 @@ public class QueryMyCardTask {
 		wd.findElement(By.tagName("form")).submit();
 
 		LOG.info("{} Result: {}", card.getTxtEasyCard4()//
-				, StringUtils.defaultString(wd.findElement(By.className("step2")).getText(), "Not exist."));
+				, StringUtils.defaultIfBlank(wd.findElement(By.className("step2")).getText(), "Not exist."));
 
 		wd.quit();
 	}
